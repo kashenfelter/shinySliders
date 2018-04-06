@@ -29,11 +29,15 @@
 # }
 
 sliderInputDep <- function(skin) {
-  # recovers the dependencies of a normal
-  # sliderInput
+  # recovers the dependencies 
+  # of a normal sliderInput
   deps <- htmltools::findDependencies(
-    sliderInput("obs", "Number of observations:", min = 0, max = 1000, value = 500)
+    sliderInput(
+      inputId = "test", 
+      label = "", 
+      min = 0, max = 1000, value = 500
     )
+  )
   # replace the css skin by what the user want
   # in chooseSliderSkin()
   deps[[1]]$stylesheet[[2]] <- paste0("css/ion.rangeSlider.skin", skin, ".css")
@@ -53,6 +57,32 @@ chooseSliderSkin <- function(skin = c("Shiny", "Flat", "Modern", "Nice",
   )
 }
 
+# you can pick colors from here
+# https://www.w3schools.com/colors/colors_names.asp
+# sliderId can be a vector like c(0, 1, 2, ...)
+# depending on what slider you want to
+# customize
+# color is also a vector depending on the number of sliders
+setSliderColor <- function(color, sliderId) {
+  
+  # create custom css background for each slider
+  # start from 0 so need to use i-1 for slider Id
+  # instead of i
+  sliderCol <- lapply(1:length(sliderId), FUN = function(i) {
+      paste0(".js-irs-", i-1, " .irs-single,", 
+             " .js-irs-", i-1, " .irs-bar-edge,",
+             " .js-irs-", i-1, " .irs-bar{
+             background: ", color[i], ";
+  }"
+      )
+  })
+  
+  # insert this custom css code in the head
+  # of the shiy app
+  custom_head <- tags$head(tags$style(HTML(as.character(sliderCol))))
+  return(custom_head)
+}
+
 
 
 
@@ -60,8 +90,13 @@ chooseSliderSkin <- function(skin = c("Shiny", "Flat", "Modern", "Nice",
 
 
 ui <- fluidPage(
+  
+  setSliderColor(c("yellow", "purple"), c(0, 1)),
   chooseSliderSkin("Modern"),
   sliderInput("obs", "Number of observations:",
+              min = 0, max = 1000, value = 500
+  ),
+  sliderInput("obs2", "Number of observations:",
               min = 0, max = 1000, value = 500
   ),
   plotOutput("distPlot")
